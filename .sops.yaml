@@ -1,0 +1,10 @@
+keys:
+  - &admin_ash FE08780D2F9D10AB4AE1ADAE9AEAC44FCE2B6276
+  - &server_meandrina 9e07be9a198dca5dd77416ef88d68caeca122c24
+
+creation_rules:
+  - path_regex: secrets/.*$
+    key_groups:
+    - pgp:
+      - *admin_ash
+      - *server_meandrina
