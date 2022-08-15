@@ -96,7 +96,7 @@ in
 
     environment.systemPackages = [
       (pkgs.writeShellScriptBin "new-matrix-user" ''
-        set -ex
+        set -e
 
         username="$1"
         if [[ -z "$username" ]]; then

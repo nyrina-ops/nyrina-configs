@@ -48,13 +48,40 @@ in
 
       dendrite.settings.client_api.turn = with config.services.coturn; {
         turn_uris = [
-          "turns:${realm}:${toString tls-listening-port}?transport=udp"
-          "turns:${realm}:${toString tls-listening-port}?transport=tcp"
           "turn:${realm}:${toString listening-port}?transport=udp"
           "turn:${realm}:${toString listening-port}?transport=tcp"
+          "turns:${realm}:443?transport=udp"
+          "turns:${realm}:443?transport=tcp"
         ];
         turn_shared_secret = "$TURN_SHARED_SECRET";
         turn_user_lifetime = "5m";
+      };
+
+      nginx = {
+        defaultListenAddresses = [ "127.0.0.1" ];
+
+        streamConfig = ''
+          map $ssl_preread_server_name $name {
+            default http_backend;
+            ${config.services.coturn.realm} turn_server;
+          }
+
+          upstream http_backend {
+            server 127.0.0.1:443;
+          }
+
+          upstream turn_server {
+            server ${config.services.coturn.realm}:5349;
+          }
+
+          server {
+            listen 10.0.0.85:443;
+            listen [2603:c021:3:de00:94f7:e3c1:a4d:9ae]:443;
+            ssl_preread on;
+            proxy_pass $name;
+            proxy_buffer_size 10m;
+          }
+        '';
       };
     };
 
