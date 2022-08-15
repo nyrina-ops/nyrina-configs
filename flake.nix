@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
+    nixpkgs.url = "github:ashkitten/nixpkgs/nyrina";
 
     colmena = {
       url = "github:zhaofengli/colmena";
@@ -19,18 +19,35 @@
   };
 
   outputs = { self, nixpkgs, colmena, impermanence, sops-nix, ... }: {
-    nixosConfigurations.meandrina = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
+    nixosConfigurations = {
+      meandrina = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
 
-      modules = [
-        impermanence.nixosModules.impermanence
-        sops-nix.nixosModules.sops
-        ./configuration.nix
-      ];
+        modules = [
+          impermanence.nixosModules.impermanence
+          sops-nix.nixosModules.sops
+          ./meandrina
+        ];
 
-      extraModules = [
-        colmena.nixosModules.deploymentOptions
-      ];
+        extraModules = [
+          colmena.nixosModules.deploymentOptions
+        ];
+      };
+
+      xenia = nixpkgs.lib.nixosSystem {
+        system = "aarch64-linux";
+
+        modules = [
+          impermanence.nixosModules.impermanence
+          sops-nix.nixosModules.sops
+          ./xenia
+        ];
+
+        extraModules = [
+          colmena.nixosModules.deploymentOptions
+          { deployment.buildOnTarget = true; }
+        ];
+      };
     };
 
     colmena = {

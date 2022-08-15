@@ -1,11 +1,7 @@
 { ... }: {
   imports = [
-    ./hardware-configuration.nix
-    ./networking.nix
     ./matrix.nix
   ];
-
-  networking.hostName = "meandrina";
 
   services.openssh.enable = true;
 
@@ -19,13 +15,6 @@
   users.mutableUsers = false;
 
   environment.persistence."/persistent" = {
-    hideMounts = true;
-
-    directories = [
-      "/nix"
-      "/boot"
-    ];
-
     files = [
       "/etc/machine-id"
       "/etc/ssh/ssh_host_ed25519_key"
@@ -36,8 +25,6 @@
   };
 
   sops = {
-    defaultSopsFile = ./secrets/meandrina.yaml;
-
     age = {
       sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
       keyFile = "/var/lib/sops-nix/key.txt";

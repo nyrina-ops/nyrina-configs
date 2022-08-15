@@ -1,6 +1,7 @@
 keys:
   - &admin_ash FE08780D2F9D10AB4AE1ADAE9AEAC44FCE2B6276
   - &server_meandrina 9e07be9a198dca5dd77416ef88d68caeca122c24
+  - &server_xenia dca428cabfbf4f4513b912764ed13308e51055c0
 
 creation_rules:
   - path_regex: secrets/.*$
@@ -8,3 +9,4 @@ creation_rules:
     - pgp:
       - *admin_ash
       - *server_meandrina
+      - *server_xenia

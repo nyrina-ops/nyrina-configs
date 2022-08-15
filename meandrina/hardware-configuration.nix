@@ -12,6 +12,12 @@
   };
   boot.initrd.availableKernelModules = [ "ata_piix" "uhci_hcd" "xen_blkfront" ];
   boot.initrd.kernelModules = [ "nvme" ];
+
   fileSystems."/" = { device = "none"; fsType = "tmpfs"; options = [ "defaults" "mode=755" ]; };
   fileSystems."/persistent" = { device = "/dev/vda1"; fsType = "ext4"; neededForBoot = true; };
+
+  environment.persistence."/persistent".directories = [
+    "/nix"
+    "/boot"
+  ];
 }
