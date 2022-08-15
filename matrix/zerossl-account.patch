@@ -1,0 +1,133 @@
+commit a84dc1cbec317e89281ae8c3440d86946a3c816c
+Author: Julius Kriukas <julius@kriukas.lt>
+Date:   Sat Oct 2 14:07:16 2021 +0300
+
+    Add support for ZeroSSL account registration
+    
+    This commit extends lego library and cli tool to support issuing
+    certificates from ZeroSSL without having to manually create an account.
+    
+    Without this commit ZeroSSL can be used but users need to manually
+    create ZeroSSL account and start `lego` in EAB (External Account
+    Binding) mode.
+    
+    From the `lego` cli tool perspective this commit:
+    
+    Detects if `lego` ir running with ZeroSSL ACME directory `--server
+    https://acme.zerossl.com/v2/DV90` and uses ZeroSSL API to issue keys for
+    EAB. There is no need to provide `--eab`, `--kid`, `--hmac` values
+    anymore.
+    
+    From the library perspective this commit:
+    
+    Creates new method `RegisterWithZeroSSL()` in the `registration`
+    package which takes care of creating ZeroSSL account with a given email.
+    Internally it re-uses `RegisterWithExternalAccountBinding()` method
+    after KID and HMAC are retrieved from ZeroSSL registration endpoint.
+
+diff --git a/cmd/cmd_run.go b/cmd/cmd_run.go
+index 00259043..73febf96 100644
+--- a/cmd/cmd_run.go
++++ b/cmd/cmd_run.go
+@@ -142,6 +142,10 @@ func register(ctx *cli.Context, client *lego.Client) (*registration.Resource, er
+ 		log.Fatal("You did not accept the TOS. Unable to proceed.")
+ 	}
+ 
++	if ctx.String("server") == lego.ZeroSSLDirectory {
++		return client.Registration.RegisterWithZeroSSL(registration.RegisterOptions{TermsOfServiceAgreed: true})
++	}
++
+ 	if ctx.Bool("eab") {
+ 		kid := ctx.String("kid")
+ 		hmacEncoded := ctx.String("hmac")
+diff --git a/cmd/setup.go b/cmd/setup.go
+index b21b6d53..b0192f7c 100644
+--- a/cmd/setup.go
++++ b/cmd/setup.go
+@@ -52,7 +52,7 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
+ 		log.Fatalf("Could not create client: %v", err)
+ 	}
+ 
+-	if client.GetExternalAccountRequired() && !ctx.IsSet("eab") {
++	if client.GetExternalAccountRequired() && !ctx.IsSet("eab") && config.CADirURL != lego.ZeroSSLDirectory {
+ 		log.Fatal("Server requires External Account Binding. Use --eab with --kid and --hmac.")
+ 	}
+ 
+diff --git a/lego/client_config.go b/lego/client_config.go
+index e75739c1..1cbc1933 100644
+--- a/lego/client_config.go
++++ b/lego/client_config.go
+@@ -38,6 +38,9 @@ const (
+ 
+ 	// LEDirectoryStaging URL to the Let's Encrypt staging.
+ 	LEDirectoryStaging = "https://acme-staging-v02.api.letsencrypt.org/directory"
++
++	// ZeroSSLDirectory URL to the ZeroSSL production.
++	ZeroSSLDirectory = "https://acme.zerossl.com/v2/DV90"
+ )
+ 
+ type Config struct {
+diff --git a/registration/registar.go b/registration/registar.go
+index 25a1b7df..95975663 100644
+--- a/registration/registar.go
++++ b/registration/registar.go
+@@ -1,8 +1,11 @@
+ package registration
+ 
+ import (
++	"encoding/json"
+ 	"errors"
++	"fmt"
+ 	"net/http"
++	"net/url"
+ 
+ 	"github.com/go-acme/lego/v4/acme"
+ 	"github.com/go-acme/lego/v4/acme/api"
+@@ -67,6 +70,47 @@ func (r *Registrar) Register(options RegisterOptions) (*Resource, error) {
+ 	return &Resource{URI: account.Location, Body: account.Account}, nil
+ }
+ 
++func createZeroSSLAccount(email string) (string, string, error) {
++	newAccountURL := "http://api.zerossl.com/acme/eab-credentials-email"
++	data := struct {
++		Success bool   `json:"success"`
++		KID     string `json:"eab_kid"`
++		HMAC    string `json:"eab_hmac_key"`
++	}{}
++
++	resp, err := http.PostForm(newAccountURL, url.Values{"email": {email}})
++	if err != nil {
++		return "", "", fmt.Errorf("acme: error creating ZeroSSL account EAB details request: %w", err)
++	}
++	defer resp.Body.Close()
++	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
++		return "", "", fmt.Errorf("acme: error reading ZeroSSL account EAB details response: %w", err)
++	}
++
++	if !data.Success {
++		return "", "", fmt.Errorf("acme: error in ZeroSSL account EAB details response, success=false")
++	}
++	return data.KID, data.HMAC, nil
++}
++
++// RegisterWithZeroSSL Register the current account to the ZeroSSL server.
++func (r *Registrar) RegisterWithZeroSSL(options RegisterOptions) (*Resource, error) {
++	if r.user.GetEmail() == "" {
++		return nil, errors.New("acme: cannot register ZeroSSL account without email address")
++	}
++
++	kid, hmac, err := createZeroSSLAccount(r.user.GetEmail())
++	if err != nil {
++		return nil, fmt.Errorf("acme: error registering new ZeroSSL account: %w", err)
++	}
++
++	return r.RegisterWithExternalAccountBinding(RegisterEABOptions{
++		TermsOfServiceAgreed: options.TermsOfServiceAgreed,
++		Kid:                  kid,
++		HmacEncoded:          hmac,
++	})
++}
++
+ // RegisterWithExternalAccountBinding Register the current account to the ACME server.
+ func (r *Registrar) RegisterWithExternalAccountBinding(options RegisterEABOptions) (*Resource, error) {
+ 	accMsg := acme.Account{

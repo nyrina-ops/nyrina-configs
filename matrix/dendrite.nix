@@ -17,7 +17,7 @@ in
           "private_key:/run/secrets/dendrite/private_key"
         ];
 
-        environmentFile = "/run/secrets/dendrite/registration_secret";
+        environmentFile = "/run/secrets/dendrite/environment_file";
 
         settings = {
           global = {
@@ -91,9 +91,9 @@ in
 
     sops.secrets = {
       "dendrite/private_key" = {};
-      "dendrite/registration_secret" = {};
+      "dendrite/environment_file" = {};
     };
-    
+
     environment.systemPackages = [
       (pkgs.writeShellScriptBin "new-matrix-user" ''
         set -ex
