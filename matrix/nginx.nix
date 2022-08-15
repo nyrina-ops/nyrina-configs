@@ -14,7 +14,7 @@ in
 
       virtualHosts."${server_name}" = {
         forceSSL = true;
-        enableACME = true;
+        useACMEHost = "${server_name}";
         kTLS = true;
       };
     };
@@ -22,6 +22,10 @@ in
     security.acme = {
       acceptTerms = true;
       defaults.email = "example@thisismyactual.email";
+      certs."${server_name}" = {
+        webroot = "/var/lib/acme/acme-challenge";
+        group = "nginx";
+      };
     };
 
     networking.firewall.allowedTCPPorts = [ 80 443 ];
