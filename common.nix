@@ -1,6 +1,6 @@
 { ... }: {
   imports = [
-    ./matrix.nix
+    ./matrix
   ];
 
   services.openssh.enable = true;

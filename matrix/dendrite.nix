@@ -1,9 +1,14 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   server_name = config.services.dendrite.settings.global.server_name;
 in
   {
+    imports = [
+      ./nginx.nix
+      ./postgresql.nix
+    ];
+
     services = {
       dendrite = {
         enable = true;
@@ -54,8 +59,6 @@ in
       };
 
       postgresql = {
-        enable = true;
-
         ensureUsers = [
           {
             name = "dendrite";
@@ -63,97 +66,53 @@ in
               "DATABASE dendrite" = "ALL PRIVILEGES";
             };
           }
-          {
-            name = "matrix-media-repo";
-            ensurePermissions = {
-              "DATABASE \"matrix-media-repo\"" = "ALL PRIVILEGES";
-            };
-          }
         ];
 
-        ensureDatabases = [
-          "dendrite"
-          "matrix-media-repo"
-        ];
+        ensureDatabases = [ "dendrite" ];
       };
 
-      nginx = {
-        enable = true;
+      nginx.virtualHosts."${server_name}".locations = {
+        "= /.well-known/matrix/server".extraConfig = ''
+          add_header Content-Type application/json;
+          return 200 '{ "m.server": "${server_name}:443" }';
+        '';
 
-        recommendedGzipSettings = true;
-        recommendedOptimisation = true;
-        recommendedProxySettings = true;
-        recommendedTlsSettings = true;
+        "= /.well-known/matrix/client".extraConfig = ''
+          add_header Content-Type application/json;
+          add_header Access-Control-Allow-Origin *;
+          return 200 '{ "m.homeserver": { "base_url": "https://${server_name}" } }';
+        '';
 
-        virtualHosts."${server_name}" = {
-          forceSSL = true;
-          enableACME = true;
-          kTLS = true;
-
-          locations = {
-            "= /.well-known/matrix/server".extraConfig = ''
-              add_header Content-Type application/json;
-              return 200 '{ "m.server": "${server_name}:443" }';
-            '';
-
-            "= /.well-known/matrix/client".extraConfig = ''
-              add_header Content-Type application/json;
-              add_header Access-Control-Allow-Origin *;
-              return 200 '{ "m.homeserver": { "base_url": "https://${server_name}" } }';
-            '';
-
-            "/_matrix".proxyPass = "http://127.0.0.1:8008";
-
-            "/_matrix/media".proxyPass = "http://127.0.0.1:8000";
-          };
-        };
-      };
-
-      matrix-media-repo = {
-        enable = true;
-        environmentFile = "/run/secrets/matrix-media-repo/environment_file";
-        settings = {
-          homeservers = [
-            {
-              name = server_name;
-              csApi = "https://${server_name}/";
-            }
-          ];
-          database.postgres = "postgresql:///matrix-media-repo?host=/run/postgresql";
-          datastores = [
-            {
-              type = "s3";
-              opts = {
-                tempPath = "";
-                endpoint = "s3.us-west-004.backblazeb2.com";
-                accessKeyId = "$ACCESS_KEY_ID";
-                accessSecret = "$ACCESS_SECRET";
-                ssl = true;
-                bucketName = "nyrina-media";
-              };
-            }
-          ];
-        };
+        "/_matrix".proxyPass = "http://127.0.0.1:8008";
       };
     };
 
     systemd.services.dendrite.after = [ "postgresql.service" ];
 
-    networking.firewall.allowedTCPPorts = [ 80 443 ];
-
-    security.acme = {
-      acceptTerms = true;
-      defaults.email = "example@thisismyactual.email";
-    };
-
     sops.secrets = {
       "dendrite/private_key" = {};
       "dendrite/registration_secret" = {};
-      "matrix-media-repo/environment_file" = {};
     };
+    
+    environment.systemPackages = [
+      (pkgs.writeShellScriptBin "new-matrix-user" ''
+        set -ex
 
-    environment.persistence."/persistent".directories = [
-      "/var/lib/postgresql"
-      "/var/lib/acme"
+        username="$1"
+        if [[ -z "$username" ]]; then
+          echo "usage: new-matrix-user <username>" >&2
+          exit 1
+        fi
+
+        password="$(${pkgs.pwgen}/bin/pwgen -s 32 1)"
+
+        ${pkgs.dendrite}/bin/create-account \
+          --config /run/dendrite/dendrite.yaml \
+          --url http://localhost:8008 \
+          --username "$username" \
+          --passwordstdin <<<"$password"
+
+        printf 'password: %s' "$password"
+      '')
     ];
   }
