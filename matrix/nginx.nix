@@ -12,6 +12,8 @@ in
       recommendedProxySettings = true;
       recommendedTlsSettings = true;
 
+      clientMaxBodySize = "100m";
+
       virtualHosts."${server_name}" = {
         forceSSL = true;
         useACMEHost = "${server_name}";
