@@ -1,12 +1,12 @@
 keys:
-  - &admin_ash FE08780D2F9D10AB4AE1ADAE9AEAC44FCE2B6276
-  - &server_meandrina 9e07be9a198dca5dd77416ef88d68caeca122c24
-  - &server_xenia dca428cabfbf4f4513b912764ed13308e51055c0
+  - &admin_ash age1v70aynt7atg63awsn4g0338qyn4c4zh52fz4dyx7qjvxkffsfdtqn8teyw
+  - &admin_anbl age154udm4wmr2wjyfys3hzh9hafrlwyj33s7uyu82uynvg95qqvk3jsa826ex
+  - &server_xenia age16pwtle0l655vznt3nutu8wx2weq6kfwp4k80qpcrcq9uy98yz9esj3j9ky
 
 creation_rules:
   - path_regex: secrets/.*$
     key_groups:
-    - pgp:
+    - age:
       - *admin_ash
-      - *server_meandrina
+      - *admin_anbl
       - *server_xenia
