@@ -27,11 +27,11 @@
           impermanence.nixosModules.impermanence
           sops-nix.nixosModules.sops
           ./xenia
+          { deployment.buildOnTarget = true; }
         ];
 
         extraModules = [
           colmena.nixosModules.deploymentOptions
-          { deployment.buildOnTarget = true; }
         ];
       };
     };
