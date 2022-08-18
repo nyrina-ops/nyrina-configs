@@ -59,6 +59,7 @@ in
 
       nginx = {
         defaultListenAddresses = [ "127.0.0.1" ];
+        virtualHosts."${server_name}".reuseport = true;
 
         streamConfig = ''
           map $ssl_preread_server_name $name {
@@ -75,8 +76,8 @@ in
           }
 
           server {
-            listen 10.0.0.85:443;
-            listen [2603:c021:3:de00:94f7:e3c1:a4d:9ae]:443;
+            listen 443 reuseport;
+            listen [::]:443 reuseport;
             ssl_preread on;
             proxy_pass $name;
             proxy_buffer_size 10m;
