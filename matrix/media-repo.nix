@@ -50,13 +50,7 @@ in
         };
       };
 
-      nginx.virtualHosts."${server_name}".locations."/_matrix/media" = {
-        proxyPass = "http://127.0.0.1:8000";
-        extraConfig = ''
-          # for thirdroom, will probably be replaced by an update to matrix-media-repo
-          add_header Cross-Origin-Resource-Policy "cross-origin";
-        '';
-      };
+      nginx.virtualHosts."${server_name}".locations."/_matrix/media".proxyPass = "http://127.0.0.1:8000";
     };
 
     sops.secrets."matrix-media-repo/environment_file" = {};
