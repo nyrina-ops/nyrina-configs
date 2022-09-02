@@ -11,11 +11,11 @@
         "utils": "utils"
       },
       "locked": {
-        "lastModified": 1661669123,
-        "narHash": "sha256-nXslD8Sbs6G9/MN7HOr+YrBCCmUdS/MpEuxJGlWeSgM=",
+        "lastModified": 1662079751,
+        "narHash": "sha256-XdhfCDhH+AYZg6uHw8Sd9+V7BmqZWZZ//99VFTrDyhM=",
         "owner": "zhaofengli",
         "repo": "colmena",
-        "rev": "e7356e2c5cbc19be6e04d284c943b24bbde81a9b",
+        "rev": "52b594a167266d25b13690361231acd3e731a690",
         "type": "github"
       },
       "original": {
@@ -95,11 +95,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1661964770,
-        "narHash": "sha256-Pl1pGhrduqIcuX//4T1JAWG8yW5ctqABuqqnR5vbrSw=",
+        "lastModified": 1662145514,
+        "narHash": "sha256-NkZZJaSirG11vJ2/68pbD7DolhG0wPZwGNMm6cO4fuQ=",
         "owner": "ashkitten",
         "repo": "nixpkgs",
-        "rev": "64b763bf7ed4adfd3deaabf8fdf0108510d49105",
+        "rev": "c93243312f0dcff6a3dee8855f2416336e71a222",
         "type": "github"
       },
       "original": {
