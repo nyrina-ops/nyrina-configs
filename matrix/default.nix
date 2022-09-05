@@ -1,5 +1,6 @@
 {
   imports = [
+    ./appservice-discord.nix
     ./cinny.nix
     ./coturn.nix
     ./dendrite.nix

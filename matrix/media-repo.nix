@@ -47,6 +47,23 @@ in
               };
             }
           ];
+          # "defaults" aren't actually properly default... remove this at some point?
+          # https://github.com/turt2live/matrix-media-repo/blob/bfb7d8d7399252b0bf1428c6429a4d16b17f2224/common/config/conf_domain.go#L68-L71
+          thumbnails.types = [
+            "image/jpeg"
+            "image/jpg"
+            "image/png"
+            "image/apng"
+            "image/gif"
+            "image/heif"
+            "image/webp"
+            #"image/svg+xml" # Be sure to have ImageMagick installed to thumbnail SVG files
+            "audio/mpeg"
+            "audio/ogg"
+            "audio/wav"
+            "audio/flac"
+            #"video/mp4" # Be sure to have ffmpeg installed to thumbnail video files
+          ];
         };
       };
 
