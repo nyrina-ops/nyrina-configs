@@ -30,7 +30,12 @@ in
           bridge = {
             domain = server_name;
             homeserverUrl = "https://${server_name}";
+            disableJoinLeaveNotifications = true;
+            disableInviteNotifications = true;
+            disableRoomTopicNotifications = true;
+            adminMxid = "@kity:kity.wtf";
           };
+          channel.namePattern = ":name";
           database.connString = "postgresql:///matrix-appservice-discord?host=/run/postgresql";
           # room.defaultVisibility = "private";
           auth.usePrivilegedIntents = true;
