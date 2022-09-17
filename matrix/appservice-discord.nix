@@ -47,19 +47,41 @@ in
       ];
     };
 
-    systemd.services.matrix-appservice-discord.serviceConfig.User = "matrix-appservice-discord";
+    systemd = {
+      services = {
+        matrix-appservice-discord.serviceConfig.User = "matrix-appservice-discord";
 
-    systemd.services.matrix-appservice-discord-bindfs = {
-      after = [ "matrix-appservice-discord.service" ];
-      wantedBy = [ "matrix-appservice-discord.service" "dendrite.service" ];
-      before = [ "dendrite.service" ];
-      script = ''
-        mkdir -p /var/lib/dendrite/discord
-        ${pkgs.bindfs}/bin/bindfs -u dendrite -g dendrite -p 0400,u+D \
-          /var/lib/matrix-appservice-discord \
-          /var/lib/dendrite/discord
-      '';
-      serviceConfig.Type = "forking";
+        matrix-appservice-discord-bindfs = {
+          after = [ "matrix-appservice-discord-registration.path" ];
+          wantedBy = [ "matrix-appservice-discord.service" "dendrite.service" ];
+          before = [ "dendrite.service" ];
+
+          script = ''
+            mkdir -p /var/lib/dendrite/discord
+            ${pkgs.bindfs}/bin/bindfs -u dendrite -g dendrite -p 0400,u+D \
+              /var/lib/matrix-appservice-discord \
+              /var/lib/dendrite/discord
+          '';
+
+          serviceConfig.Type = "forking";
+        };
+      };
+
+      paths.matrix-appservice-discord-registration.pathConfig = {
+        PathExists = "/var/lib/matrix-appservice-discord";
+      };
+    };
+
+    # need static user for matrix-appservice-discord-bindfs.service
+    # otherwise it won't be able to set the correct permissions,
+    # since dendrite.service isn't started yet
+    users = {
+      users.dendrite = {
+        isSystemUser = true;
+        group = "dendrite";
+      };
+
+      groups.dendrite = {};
     };
 
     nixpkgs.overlays = [
