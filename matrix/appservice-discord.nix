@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   server_name = config.services.dendrite.settings.global.server_name;
@@ -36,7 +36,10 @@ in
             adminMxid = "@kity:kity.wtf";
           };
           channel.namePattern = ":name";
-          database.connString = "postgresql:///matrix-appservice-discord?host=/run/postgresql";
+          database = {
+            connString = "postgresql:///matrix-appservice-discord?host=/run/postgresql";
+            filename = null;
+          };
           # room.defaultVisibility = "private";
           auth.usePrivilegedIntents = true;
         };
@@ -48,29 +51,24 @@ in
     };
 
     systemd = {
-      services = {
-        matrix-appservice-discord.serviceConfig.User = "matrix-appservice-discord";
+      services.matrix-appservice-discord.serviceConfig.User = "matrix-appservice-discord";
 
-        matrix-appservice-discord-bindfs = {
-          after = [ "matrix-appservice-discord-registration.path" ];
-          wantedBy = [ "matrix-appservice-discord.service" "dendrite.service" ];
+      mounts = [
+        {
           before = [ "dendrite.service" ];
+          wantedBy = [ "dendrite.service" ];
+          after = [ "matrix-appservice-discord.service" ];
+          bindsTo = [ "matrix-appservice-discord.service" ];
 
-          script = ''
-            mkdir -p /var/lib/dendrite/discord
-            ${pkgs.bindfs}/bin/bindfs -u dendrite -g dendrite -p 0400,u+D \
-              /var/lib/matrix-appservice-discord \
-              /var/lib/dendrite/discord
-          '';
-
-          serviceConfig.Type = "forking";
-        };
-      };
-
-      paths.matrix-appservice-discord-registration.pathConfig = {
-        PathExists = "/var/lib/matrix-appservice-discord";
-      };
+          type = "fuse.bindfs";
+          what = "/var/lib/matrix-appservice-discord";
+          where = "/var/lib/private/dendrite/discord";
+          options = "force-user=dendrite,force-group=dendrite,perms=0000:u+rD";
+        }
+      ];
     };
+
+    system.fsPackages = [ pkgs.bindfs ];
 
     # need static user for matrix-appservice-discord-bindfs.service
     # otherwise it won't be able to set the correct permissions,
