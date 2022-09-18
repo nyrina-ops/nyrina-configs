@@ -33,6 +33,8 @@ in
               enable_inbound = true;
               enable_outbound = true;
             };
+
+            cache.max_size_estimated = "16gb";
           };
 
           # 'msc2444': Peeking over federation - https://github.com/matrix-org/matrix-doc/pull/2444
