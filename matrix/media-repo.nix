@@ -70,5 +70,10 @@ in
       nginx.virtualHosts."${server_name}".locations."/_matrix/media".proxyPass = "http://127.0.0.1:8000";
     };
 
+    systemd.services.matrix-media-repo = {
+      wants = [ "postgresql.service" ];
+      after = [ "postgresql.service" ];
+    };
+
     sops.secrets."matrix-media-repo/environment_file" = {};
   }
