@@ -63,7 +63,9 @@ in
           type = "fuse.bindfs";
           what = "/var/lib/matrix-appservice-discord";
           where = "/var/lib/private/dendrite/discord";
-          options = "force-user=dendrite,force-group=dendrite,perms=0000:u+rD";
+          # avoid a dependency cycle by adding noauto and nofail; otherwise it will
+          # implicitly get a Before= dependency on `local-fs.target` and we don't want that
+          options = "noauto,nofail,force-user=dendrite,force-group=dendrite,perms=0000:u+rD";
         }
       ];
     };
