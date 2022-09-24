@@ -18,6 +18,13 @@ in
         cert = "${config.security.acme.certs.${realm}.directory}/full.pem";
         pkey = "${config.security.acme.certs.${realm}.directory}/key.pem";
         extraConfig = ''
+          # TODO: make this configurable per machine or auto-discover
+          external-ip=129.153.55.114/10.0.0.85
+          # makes the voip tester happy
+          # technically not spec compliant behavior?
+          # idk why coturn works without this on another machine with public ipv4 assigned directly
+          allocation-default-address-family=keep
+
           verbose
           # ban private IP ranges
           no-multicast-peers
@@ -50,39 +57,11 @@ in
         turn_uris = [
           "turn:${realm}:${toString listening-port}?transport=udp"
           "turn:${realm}:${toString listening-port}?transport=tcp"
-          "turns:${realm}:443?transport=udp"
-          "turns:${realm}:443?transport=tcp"
+          "turns:${realm}:${toString tls-listening-port}?transport=udp"
+          "turns:${realm}:${toString tls-listening-port}?transport=tcp"
         ];
         turn_shared_secret = "$TURN_SHARED_SECRET";
         turn_user_lifetime = "5m";
-      };
-
-      nginx = {
-        defaultListenAddresses = [ "127.0.0.1" ];
-        virtualHosts."${server_name}".reuseport = true;
-
-        streamConfig = ''
-          map $ssl_preread_server_name $name {
-            default http_backend;
-            ${config.services.coturn.realm} turn_server;
-          }
-
-          upstream http_backend {
-            server 127.0.0.1:443;
-          }
-
-          upstream turn_server {
-            server ${config.services.coturn.realm}:5349;
-          }
-
-          server {
-            listen 443 reuseport;
-            listen [::]:443 reuseport;
-            ssl_preread on;
-            proxy_pass $name;
-            proxy_buffer_size 10m;
-          }
-        '';
       };
     };
 
