@@ -23,6 +23,9 @@ in
           global = {
             private_key = "$CREDENTIALS_DIRECTORY/private_key";
 
+            # preserve across restarts
+            jetstream.storage_path = "/var/lib/dendrite/jetstream";
+
             dns_cache = {
               enabled = true;
               cache_size = 4096;
@@ -96,25 +99,32 @@ in
       "dendrite/environment_file" = {};
     };
 
-    environment.systemPackages = [
-      (pkgs.writeShellScriptBin "new-matrix-user" ''
-        set -e
+    environment = {
+      systemPackages = [
+        (pkgs.writeShellScriptBin "new-matrix-user" ''
+          set -e
 
-        username="$1"
-        if [[ -z "$username" ]]; then
-          echo "usage: new-matrix-user <username>" >&2
-          exit 1
-        fi
+          username="$1"
+          if [[ -z "$username" ]]; then
+            echo "usage: new-matrix-user <username>" >&2
+            exit 1
+          fi
 
-        password="$(${pkgs.pwgen}/bin/pwgen -s 32 1)"
+          password="$(${pkgs.pwgen}/bin/pwgen -s 32 1)"
 
-        ${pkgs.dendrite}/bin/create-account \
-          --config /run/dendrite/dendrite.yaml \
-          --url http://localhost:8008 \
-          --username "$username" \
-          --passwordstdin <<<"$password"
+          ${pkgs.dendrite}/bin/create-account \
+            --config /run/dendrite/dendrite.yaml \
+            --url http://localhost:8008 \
+            --username "$username" \
+            --passwordstdin <<<"$password"
 
-        printf 'password: %s' "$password"
-      '')
-    ];
+          printf 'password: %s' "$password"
+        '')
+      ];
+
+      persistence."/persistent".directories = [
+        # jetstream
+        "/var/lib/private/dendrite/jetstream"
+      ];
+    };
   }
