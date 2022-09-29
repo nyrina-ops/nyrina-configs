@@ -49,6 +49,16 @@ in
             "msc2946"
           ];
 
+          federation_api.key_perspectives = [
+            {
+              server_name = "matrix.org";
+              keys = [
+                { key_id = "ed25519:auto"; public_key = "Noi6WqcDj0QmPxCNQqgezwTlBKrfqehY1u2FyWP9uYw"; }
+                { key_id = "ed25519:a_RXGa"; public_key = "l8Hft5qXKn1vfHrg3p4+W8gELQVo8N13JkluMfmn2sQ"; }
+              ];
+            }
+          ];
+
           client_api.registration_shared_secret = "$REGISTRATION_SHARED_SECRET";
 
           app_service_api.database.connection_string = "postgresql:///dendrite?host=/run/postgresql";
