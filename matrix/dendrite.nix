@@ -24,7 +24,7 @@ in
             private_key = "$CREDENTIALS_DIRECTORY/private_key";
 
             # preserve across restarts
-            jetstream.storage_path = "/var/lib/dendrite/jetstream";
+            jetstream.storage_path = "/var/lib/dendrite/";
 
             dns_cache = {
               enabled = true;
@@ -60,6 +60,11 @@ in
           ];
 
           client_api.registration_shared_secret = "$REGISTRATION_SHARED_SECRET";
+
+          sync_api.search = {
+            enabled = true;
+            index_path = "/var/lib/dendrite/searchindex";
+          };
 
           app_service_api.database.connection_string = "postgresql:///dendrite?host=/run/postgresql";
           federation_api.database.connection_string = "postgresql:///dendrite?host=/run/postgresql";
@@ -133,8 +138,7 @@ in
       ];
 
       persistence."/persistent".directories = [
-        # jetstream
-        "/var/lib/private/dendrite/jetstream"
+        "/var/lib/private/dendrite"
       ];
     };
   }
