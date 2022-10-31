@@ -5,7 +5,7 @@ let
 
   database_config = {
     connection_string = "postgresql:///dendrite?host=/run/postgresql";
-    max_open_conns = 90;
+    max_open_conns = 10;
     max_idle_conns = 5;
   };
 in
