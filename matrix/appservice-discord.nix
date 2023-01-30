@@ -88,13 +88,6 @@ in
     nixpkgs.overlays = [
       (self: super: {
         matrix-appservice-discord = super.matrix-appservice-discord.overrideAttrs (old: {
-          patches = [
-            (super.fetchpatch {
-              url = "https://patch-diff.githubusercontent.com/raw/matrix-org/matrix-appservice-discord/pull/842.patch";
-              sha256 = "sha256-XPTbzZgRJzwiRs817LP28/SDXEMyNdt82R4OAAZoHBI=";
-            })
-          ];
-
           postPatch = ''
             substituteInPlace src/discordas.ts \
               --replace 'sender_localpart: "_discord_bot"' 'sender_localpart: "_discord"'
