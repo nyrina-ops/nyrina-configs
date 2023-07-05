@@ -6,5 +6,6 @@
     ./dendrite.nix
     ./element.nix
     ./media-repo.nix
+    ./restic.nix
   ];
 }
