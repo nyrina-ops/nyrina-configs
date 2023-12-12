@@ -30,17 +30,9 @@
   ];
 
   boot.loader.efi.canTouchEfiVariables = false;
-  boot.loader.grub = {
-    version = 2;
-    device = "nodev";
-    splashImage = null;
-    extraConfig = ''
-      serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1
-      terminal_input --append serial
-      terminal_output --append serial
-    '';
-    efiInstallAsRemovable = true;
-    efiSupport = true;
+  boot.loader.systemd-boot = {
+    enable = true;
+    configurationLimit = 3;
   };
 
   # https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/configuringntpservice.htm#Configuring_the_Oracle_Cloud_Infrastructure_NTP_Service_for_an_Instance
