@@ -37,6 +37,7 @@ in
           datastores = [
             {
               type = "s3";
+              id = "9b266d1e2d18d83e90305c11b06f54b5ce2ee414";
               opts = {
                 tempPath = "";
                 endpoint = "s3.us-west-004.backblazeb2.com";
