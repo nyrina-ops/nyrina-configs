@@ -106,7 +106,10 @@ in
         "= /.well-known/matrix/client".extraConfig = ''
           add_header Content-Type application/json;
           add_header Access-Control-Allow-Origin *;
-          return 200 '{ "m.homeserver": { "base_url": "https://${server_name}" } }';
+          return 200 '{
+            "m.homeserver": { "base_url": "https://${server_name}" },
+            "org.matrix.msc3575.proxy": { "url": "https://${server_name}" }
+          }';
         '';
 
         "/_matrix".proxyPass = "http://127.0.0.1:8008";
