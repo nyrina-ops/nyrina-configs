@@ -19,4 +19,6 @@ in
         };
       };
     };
+
+    sops.secrets."sliding-sync/environment_file" = {};
   }
