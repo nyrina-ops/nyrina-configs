@@ -7,5 +7,6 @@
     ./element.nix
     ./media-repo.nix
     ./restic.nix
+    ./sliding-sync.nix
   ];
 }
