@@ -88,9 +88,7 @@ in
         ensureUsers = [
           {
             name = "dendrite";
-            ensurePermissions = {
-              "DATABASE dendrite" = "ALL PRIVILEGES";
-            };
+            ensureDBOwnership = true;
           }
         ];
 

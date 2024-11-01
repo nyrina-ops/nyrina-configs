@@ -13,9 +13,7 @@ in
         ensureUsers = [
           {
             name = "matrix-appservice-discord";
-            ensurePermissions = {
-              "DATABASE \"matrix-appservice-discord\"" = "ALL PRIVILEGES";
-            };
+            ensureDBOwnership = true;
           }
         ];
 

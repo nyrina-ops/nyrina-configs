@@ -14,9 +14,7 @@ in
         ensureUsers = [
           {
             name = "matrix-media-repo";
-            ensurePermissions = {
-              "DATABASE \"matrix-media-repo\"" = "ALL PRIVILEGES";
-            };
+            ensureDBOwnership = true;
           }
         ];
 
