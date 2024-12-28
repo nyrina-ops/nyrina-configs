@@ -27,4 +27,9 @@ in
     security.acme.certs."${server_name}".extraDomainNames = [
       "cinny.${server_name}"
     ];
+
+    nixpkgs.config.permittedInsecurePackages = [
+      "cinny-4.2.3"
+      "cinny-unwrapped-4.2.3"
+    ];
   }

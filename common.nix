@@ -24,6 +24,10 @@
     ];
   };
 
+  # https://github.com/nix-community/impermanence/issues/229
+  boot.initrd.systemd.suppressedUnits = [ "systemd-machine-id-commit.service" ];
+  systemd.suppressedSystemUnits = [ "systemd-machine-id-commit.service" ];
+
   sops = {
     age = {
       sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
