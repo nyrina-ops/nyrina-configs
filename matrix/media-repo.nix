@@ -29,6 +29,7 @@ in
             {
               name = server_name;
               csApi = "https://${server_name}/";
+              signingKeyPath = "$CREDENTIALS_DIRECTORY/signing_key";
             }
           ];
           database.postgres = "postgresql:///matrix-media-repo?host=/run/postgresql";
@@ -66,13 +67,23 @@ in
         };
       };
 
-      nginx.virtualHosts."${server_name}".locations."/_matrix/media".proxyPass = "http://127.0.0.1:8000";
+      nginx.virtualHosts."${server_name}".locations = {
+        "/_matrix/media".proxyPass = "http://127.0.0.1:8000";
+        "/_matrix/client/v1/media".proxyPass = "http://127.0.0.1:8000";
+        "/_matrix/federation/v1/media".proxyPass = "http://127.0.0.1:8000";
+      };
     };
 
     systemd.services.matrix-media-repo = {
       wants = [ "postgresql.service" ];
       after = [ "postgresql.service" ];
+      serviceConfig.LoadCredential = [
+        "signing_key:/run/secrets/matrix-media-repo/signing_key"
+      ];
     };
 
-    sops.secrets."matrix-media-repo/environment_file" = {};
+    sops.secrets = {
+      "matrix-media-repo/environment_file" = {};
+      "matrix-media-repo/signing_key" = {};
+    };
   }
