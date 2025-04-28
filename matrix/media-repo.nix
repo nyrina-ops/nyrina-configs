@@ -67,9 +67,11 @@ in
         };
       };
 
+      # https://github.com/t2bot/matrix-media-repo/blob/main/dev/homeserver.nginx.conf
       nginx.virtualHosts."${server_name}".locations = {
         "/_matrix/media".proxyPass = "http://127.0.0.1:8000";
-        "/_matrix/(client|federation)/v1/media".proxyPass = "http://127.0.0.1:8000";
+        "/_matrix/client/v1/media".proxyPass = "http://127.0.0.1:8000";
+        "/_matrix/federation/v1/media".proxyPass = "http://127.0.0.1:8000";
       };
     };
 
