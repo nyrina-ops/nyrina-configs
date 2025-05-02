@@ -64,6 +64,7 @@ in
             "audio/flac"
             #"video/mp4" # Be sure to have ffmpeg installed to thumbnail video files
           ];
+          repo.freezeUnauthenticatedMedia = false;
         };
       };
 
